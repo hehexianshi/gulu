@@ -1,6 +1,7 @@
 # gulu
     php训练营第一次作业
 ##nginx
+
 server {
         listen 80;
         server_name gulu;
