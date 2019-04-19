@@ -9,16 +9,13 @@ class App
 
     public function __construct()
     {
-    
+
     }
 
     public function run()
     {
         $uri = $_SERVER['REQUEST_URI'];
 
-        $this->dispatch($uri);
-        
-        $controller = new $this->controller;
         if (!$this->request) {
             $this->request = new Request;
         }
@@ -26,6 +23,11 @@ class App
         if (!$this->response) {
             $this->response = new Response;
         }
+
+        $this->dispatch($uri);
+
+        $controller = new $this->controller;
+        
 
         call_user_func_array([$controller, $this->action], [$this->request, $this->response]);
 
@@ -45,19 +47,29 @@ class App
                 $controller .= 'Controller';
                 $action = array_shift($router);
                 $action .= 'Action';
-
-                if (count($router)) {
-                    $this->request = new Request;
-                    for ($i = 0; $i < count($router); $i += 2) {
-                        $this->request->$router[$i] = $router[$i + 1];
-                    }
-                }
             }             
 
-        
         } else {
             $controller = 'indexController';
             $action = 'indexAction';
+            $router = [];
+        }
+
+        switch ($_SERVER['REQUEST_METHOD']) {
+        case 'GET':
+            if (count($router)) {
+                for ($i = 0; $i < count($router); $i += 2) {
+                    $this->request->$router[$i] = $router[$i + 1];
+                }
+            }
+            break;
+        case 'POST':
+            foreach ($_POST as $k => $v) {
+                $this->request->$k = $v;
+            }
+            break;
+        default:
+            break;
         }
 
         $this->controller = $controller;
